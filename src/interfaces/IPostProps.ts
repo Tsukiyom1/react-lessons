@@ -5,7 +5,7 @@ export interface IPostProps {
 	posts: IPosts;
 	onDelete: (id: number) => void;
 	isEdit?: boolean;
-	onUpdate: () => void;
+	onUpdate: (id: number) => void;
 	onCancel: () => void;
 	onEdit: (post: IPosts) => void;
 	onEditChange: (e: React.ChangeEvent<HTMLInputElement>) => void;

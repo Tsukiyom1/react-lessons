@@ -91,6 +91,34 @@ function App() {
 		setEditValue({ title: post.title, body: post.body });
 	};
 
+	const cancelEdit = () => {
+		setEditingPostId(null);
+	};
+
+	const onEditChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = e.target;
+
+		console.log(value, "val");
+		console.log(editValue);
+
+		setEditValue(prev => {
+			return {
+				...prev,
+				[name]: value,
+			};
+		});
+	};
+
+	const onUpdatePost = (id: number) => {
+		setPosts(
+			posts.map(post => {
+				return post.id === id
+					? { ...post, title: editValue.title, body: editValue.body }
+					: post;
+			})
+		);
+		setEditingPostId(null);
+	};
 	return (
 		<React.Fragment>
 			{/* это является управляемым компонентом */}
@@ -112,19 +140,23 @@ function App() {
 				<MyButton type='submit' children='Отправить' />
 			</form>
 			<h2>Посты</h2>
-			{posts.map((post, index) => (
-				<Posts
-					posts={post}
-					key={index}
-					onDelete={onDeletePost}
-					editValue={editValue}
-					onCancel={() => {}}
-					onEdit={startEdit}
-					onEditChange={() => {}}
-					onUpdate={() => {}}
-					isEdit={editingPostId === post.id}
-				/>
-			))}
+			{posts.length === 0 ? (
+				<div>Постов не обнаружено</div>
+			) : (
+				posts.map((post, index) => (
+					<Posts
+						posts={post}
+						key={index}
+						onDelete={onDeletePost}
+						editValue={editValue}
+						onCancel={cancelEdit}
+						onEdit={startEdit}
+						onEditChange={onEditChange}
+						onUpdate={onUpdatePost}
+						isEdit={editingPostId === post.id}
+					/>
+				))
+			)}
 		</React.Fragment>
 	);
 }

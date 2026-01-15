@@ -31,7 +31,11 @@ const Posts = ({
 					type='text'
 					value={editValue.body}
 				/>
-				<MyButton type='button' children='Сохранить' onClick={onUpdate} />
+				<MyButton
+					type='button'
+					children='Сохранить'
+					onClick={() => onUpdate(posts.id)}
+				/>
 				<MyButton type='button' children='Отмена' onClick={onCancel} />
 			</div>
 		);
