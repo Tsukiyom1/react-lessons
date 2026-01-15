@@ -1,5 +1,5 @@
 export interface IInputProps {
-	placeholder: string;
+	placeholder?: string;
 	name: string;
 	value: string;
 	type: string;

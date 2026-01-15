@@ -27,6 +27,11 @@ function App() {
 		title: "",
 		body: "",
 	});
+	const [editValue, setEditValue] = useState({
+		title: "",
+		body: "",
+	});
+	const [editingPostId, setEditingPostId] = useState<number | null>(null);
 
 	// useEffect(() => {
 	// 	const fetchData = async () => {
@@ -74,12 +79,16 @@ function App() {
 	const onDeletePost = (id: number) => {
 		setPosts(
 			posts.filter(post => {
-				console.log(post.id, "id поста ");
-				console.log(id, "id поста которые мы удалили");
-
 				return post.id !== id;
 			})
 		);
+	};
+
+	const startEdit = (post: IPosts) => {
+		console.log(post);
+
+		setEditingPostId(post.id);
+		setEditValue({ title: post.title, body: post.body });
 	};
 
 	return (
@@ -104,7 +113,17 @@ function App() {
 			</form>
 			<h2>Посты</h2>
 			{posts.map((post, index) => (
-				<Posts posts={post} key={index} onDelete={onDeletePost} />
+				<Posts
+					posts={post}
+					key={index}
+					onDelete={onDeletePost}
+					editValue={editValue}
+					onCancel={() => {}}
+					onEdit={startEdit}
+					onEditChange={() => {}}
+					onUpdate={() => {}}
+					isEdit={editingPostId === post.id}
+				/>
 			))}
 		</React.Fragment>
 	);
