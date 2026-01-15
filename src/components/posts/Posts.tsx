@@ -1,14 +1,23 @@
 import React from "react";
-import type { IPosts } from "../../interfaces/IPosts";
+import MyButton from "../../UI/button/MyButton";
+import type { IPostProps } from "../../interfaces/IPostProps";
 
-const Posts = ({ body, title, id }: IPosts) => {
+const Posts = ({ posts, onDelete }: IPostProps) => {
 	return (
 		<React.Fragment>
-			<div className='post' key={id}>
+			<div className='post' key={posts.id}>
 				<h2>
-					{id}.{title}
+					{posts.id}.{posts.title}
 				</h2>
-				<p>{body}</p>
+				<p>{posts.body}</p>
+			</div>
+			<div className='btns'>
+				<MyButton
+					onClick={() => onDelete(posts.id)}
+					children='Удалить'
+					type='button'
+				/>
+				<MyButton children='Редактировать' type='button' />
 			</div>
 		</React.Fragment>
 	);

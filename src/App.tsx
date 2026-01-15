@@ -22,8 +22,11 @@ function App() {
 			body: "Я изучаю Python",
 		},
 	]);
-	const [title, setTitle] = useState("");
-	const [body, setBody] = useState("");
+
+	const [change, setChange] = useState({
+		title: "",
+		body: "",
+	});
 
 	// useEffect(() => {
 	// 	const fetchData = async () => {
@@ -46,20 +49,37 @@ function App() {
 		e.preventDefault();
 		const newPosts: IPosts = {
 			id: Date.now(),
-			body: body,
-			title: title,
+			body: change.body,
+			title: change.title,
 		};
 
 		setPosts([...posts, newPosts]);
-		setTitle("");
-		setBody("");
+		setChange({
+			title: "",
+			body: "",
+		});
 	};
 
-	const onTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
-		setTitle(e.target.value);
+	const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = e.target;
+
+		setChange(prev => {
+			return {
+				...prev,
+				[name]: value,
+			};
+		});
 	};
-	const onBodyChange = (e: ChangeEvent<HTMLInputElement>) => {
-		setBody(e.target.value);
+
+	const onDeletePost = (id: number) => {
+		setPosts(
+			posts.filter(post => {
+				console.log(post.id, "id поста ");
+				console.log(id, "id поста которые мы удалили");
+
+				return post.id !== id;
+			})
+		);
 	};
 
 	return (
@@ -67,24 +87,24 @@ function App() {
 			{/* это является управляемым компонентом */}
 			<form onSubmit={addNewPost}>
 				<MyInput
-					name=''
-					onChange={onTitleChange}
+					name='title'
+					onChange={onChange}
 					placeholder='Введите заголовок'
 					type='text'
-					value={title}
+					value={change.title}
 				/>
 				<MyInput
-					name=''
-					onChange={onBodyChange}
+					name='body'
+					onChange={onChange}
 					placeholder='Введите текст'
 					type='text'
-					value={body}
+					value={change.body}
 				/>
 				<MyButton type='submit' children='Отправить' />
 			</form>
 			<h2>Посты</h2>
 			{posts.map((post, index) => (
-				<Posts title={post.title} body={post.body} id={post.id} key={index} />
+				<Posts posts={post} key={index} onDelete={onDeletePost} />
 			))}
 		</React.Fragment>
 	);
