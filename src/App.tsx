@@ -1,25 +1,26 @@
-import React, { type ChangeEvent, type FormEvent } from "react";
+import React, { useMemo, type ChangeEvent, type FormEvent } from "react";
 import { useState } from "react";
 import Posts from "./components/posts/Posts";
 import type { IPosts } from "./interfaces/IPosts";
 import MyButton from "./UI/button/MyButton";
 import MyInput from "./UI/input/MyInput";
+import MySelect from "./UI/select/MySelect";
 function App() {
 	const [posts, setPosts] = useState<IPosts[]>([
 		{
 			id: 1,
 			title: "Js",
-			body: "Я изучаю js",
+			body: "фф изучаю js",
 		},
 		{
 			id: 2,
 			title: "React",
-			body: "Я изучаю React",
+			body: "аа изучаю React",
 		},
 		{
 			id: 3,
 			title: "Python",
-			body: "Я изучаю Python",
+			body: "сс изучаю Python",
 		},
 	]);
 
@@ -31,24 +32,18 @@ function App() {
 		title: "",
 		body: "",
 	});
+	const [searchQuery, setSearchQuery] = useState<string>("");
 	const [editingPostId, setEditingPostId] = useState<number | null>(null);
-
-	// useEffect(() => {
-	// 	const fetchData = async () => {
-	// 		try {
-	// 			const response = await fetch(
-	// 				"https://jsonplaceholder.typicode.com/posts"
-	// 			);
-
-	// 			const data: IPosts[] = await response.json();
-
-	// 			setPosts(data);
-	// 		} catch (error) {
-	// 			console.error(error, "error when getting data");
-	// 		}
-	// 	};
-	// 	fetchData();
-	// }, []);
+	const [selected, setSelected] = useState<string>("");
+	const sorted = useMemo(() => {
+		return selected
+			? [...posts].sort((a, b) =>
+					a[selected as keyof Omit<IPosts, "id">].localeCompare(
+						b[selected as keyof Omit<IPosts, "id">],
+					),
+				)
+			: [...posts];
+	}, [posts, selected]);
 
 	const addNewPost = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -80,7 +75,7 @@ function App() {
 		setPosts(
 			posts.filter(post => {
 				return post.id !== id;
-			})
+			}),
 		);
 	};
 
@@ -115,10 +110,33 @@ function App() {
 				return post.id === id
 					? { ...post, title: editValue.title, body: editValue.body }
 					: post;
-			})
+			}),
 		);
 		setEditingPostId(null);
 	};
+
+	const sortPosts = (sort: string) => {
+		setSelected(sort);
+	};
+
+	const searchPosts = () => {
+		if (searchQuery === "") {
+			return sorted;
+		}
+
+		const query = searchQuery.toLowerCase();
+
+		const filtered = sorted.filter(post => {
+			const title = post.title.toLowerCase().includes(query);
+			const body = post.body.toLowerCase().includes(query);
+
+			return title || body;
+		});
+
+		return filtered;
+	};
+
+	const filteredPosts = useMemo(() => searchPosts(), [searchPosts]);
 	return (
 		<React.Fragment>
 			{/* это является управляемым компонентом */}
@@ -140,10 +158,30 @@ function App() {
 				<MyButton type='submit' children='Отправить' />
 			</form>
 			<h2>Посты</h2>
-			{posts.length === 0 ? (
+			<div>
+				<MyInput
+					name='search'
+					onChange={(e: ChangeEvent<HTMLInputElement>) =>
+						setSearchQuery(e.target.value)
+					}
+					type='text'
+					value={searchQuery}
+					placeholder='Поиск...'
+				/>
+				<MySelect
+					defaultValue='Сортировка по'
+					onChange={sortPosts}
+					options={[
+						{ name: "Сортировка по названию", value: "title" },
+						{ name: "Сортировка по описанию", value: "body" },
+					]}
+					value={selected}
+				/>
+			</div>
+			{filteredPosts.length === 0 ? (
 				<div>Постов не обнаружено</div>
 			) : (
-				posts.map((post, index) => (
+				filteredPosts.map((post, index) => (
 					<Posts
 						posts={post}
 						key={index}
