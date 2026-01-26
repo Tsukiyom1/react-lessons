@@ -6,6 +6,7 @@ import MyButton from "./UI/button/MyButton";
 import MyInput from "./UI/input/MyInput";
 import MySelect from "./UI/select/MySelect";
 import MyModal from "./UI/modal/MyModal";
+import { useSortedPosts } from "./hooks/useSortedPosts";
 function App() {
 	const [posts, setPosts] = useState<IPosts[]>([
 		{
@@ -37,15 +38,7 @@ function App() {
 	const [editingPostId, setEditingPostId] = useState<number | null>(null);
 	const [selected, setSelected] = useState<string>("");
 	const [modal, setModal] = useState(false);
-	const sorted = useMemo(() => {
-		return selected
-			? [...posts].sort((a, b) =>
-					a[selected as keyof Omit<IPosts, "id">].localeCompare(
-						b[selected as keyof Omit<IPosts, "id">],
-					),
-				)
-			: [...posts];
-	}, [posts, selected]);
+	const sorted = useSortedPosts(posts, selected);
 
 	const addNewPost = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -123,6 +116,8 @@ function App() {
 		}
 
 		const query = searchQuery.toLowerCase();
+
+		console.log();
 
 		const filtered = sorted.filter(post => {
 			const title = post.title.toLowerCase().includes(query);
