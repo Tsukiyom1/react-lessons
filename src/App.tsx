@@ -5,6 +5,7 @@ import type { IPosts } from "./interfaces/IPosts";
 import MyButton from "./UI/button/MyButton";
 import MyInput from "./UI/input/MyInput";
 import MySelect from "./UI/select/MySelect";
+import MyModal from "./UI/modal/MyModal";
 function App() {
 	const [posts, setPosts] = useState<IPosts[]>([
 		{
@@ -35,6 +36,7 @@ function App() {
 	const [searchQuery, setSearchQuery] = useState<string>("");
 	const [editingPostId, setEditingPostId] = useState<number | null>(null);
 	const [selected, setSelected] = useState<string>("");
+	const [modal, setModal] = useState(false);
 	const sorted = useMemo(() => {
 		return selected
 			? [...posts].sort((a, b) =>
@@ -58,6 +60,8 @@ function App() {
 			title: "",
 			body: "",
 		});
+
+		setModal(!modal);
 	};
 
 	const onChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -80,8 +84,6 @@ function App() {
 	};
 
 	const startEdit = (post: IPosts) => {
-		console.log(post);
-
 		setEditingPostId(post.id);
 		setEditValue({ title: post.title, body: post.body });
 	};
@@ -92,10 +94,6 @@ function App() {
 
 	const onEditChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
-
-		console.log(value, "val");
-		console.log(editValue);
-
 		setEditValue(prev => {
 			return {
 				...prev,
@@ -136,27 +134,38 @@ function App() {
 		return filtered;
 	};
 
+	console.log(modal);
+
 	const filteredPosts = useMemo(() => searchPosts(), [searchPosts]);
 	return (
 		<React.Fragment>
-			{/* это является управляемым компонентом */}
-			<form onSubmit={addNewPost}>
-				<MyInput
-					name='title'
-					onChange={onChange}
-					placeholder='Введите заголовок'
-					type='text'
-					value={change.title}
-				/>
-				<MyInput
-					name='body'
-					onChange={onChange}
-					placeholder='Введите текст'
-					type='text'
-					value={change.body}
-				/>
-				<MyButton type='submit' children='Отправить' />
-			</form>
+			<MyButton
+				children='Создать пост'
+				type='button'
+				onClick={() => setModal(!modal)}
+			/>
+			<MyModal setVisible={setModal} visible={modal}>
+				<h2 style={{ textAlign: "center" }}>Создайте пост!</h2>
+				{/* это является управляемым компонентом */}
+				<form onSubmit={addNewPost}>
+					<MyInput
+						name='title'
+						onChange={onChange}
+						placeholder='Введите заголовок'
+						type='text'
+						value={change.title}
+					/>
+					<MyInput
+						name='body'
+						onChange={onChange}
+						placeholder='Введите текст'
+						type='text'
+						value={change.body}
+					/>
+					<MyButton type='submit' children='Отправить' />
+				</form>
+			</MyModal>
+
 			<h2>Посты</h2>
 			<div>
 				<MyInput
