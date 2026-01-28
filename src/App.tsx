@@ -7,24 +7,10 @@ import MyInput from "./UI/input/MyInput";
 import MySelect from "./UI/select/MySelect";
 import MyModal from "./UI/modal/MyModal";
 import { useSortedPosts } from "./hooks/useSortedPosts";
+import { PostAPIService } from "./components/api/endpoints/post.api";
+
 function App() {
-	const [posts, setPosts] = useState<IPosts[]>([
-		{
-			id: 1,
-			title: "Js",
-			body: "фф изучаю js",
-		},
-		{
-			id: 2,
-			title: "React",
-			body: "аа изучаю React",
-		},
-		{
-			id: 3,
-			title: "Python",
-			body: "сс изучаю Python",
-		},
-	]);
+	const [posts, setPosts] = useState<IPosts[]>([]);
 
 	const [change, setChange] = useState({
 		title: "",
@@ -131,9 +117,24 @@ function App() {
 
 	console.log(modal);
 
+	const fetchData = async () => {
+		const response = await PostAPIService.getAllPosts();
+		console.log(response, "res");
+
+		const data = Object.keys(response).map(value => {
+			return {
+				id: value,
+				...response[value],
+			};
+		});
+
+		setPosts(data);
+	};
+
 	const filteredPosts = useMemo(() => searchPosts(), [searchPosts]);
 	return (
 		<React.Fragment>
+			<button onClick={fetchData}>Получить данные</button>
 			<MyButton
 				children='Создать пост'
 				type='button'
