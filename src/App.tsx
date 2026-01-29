@@ -8,10 +8,12 @@ import MySelect from "./UI/select/MySelect";
 import MyModal from "./UI/modal/MyModal";
 import { useSortedPosts } from "./hooks/useSortedPosts";
 import { PostAPIService } from "./components/api/endpoints/post.api";
+import type { IComment } from "./interfaces/IComment";
+import { CommentApiService } from "./components/api/endpoints/comments.api";
 
 function App() {
 	const [posts, setPosts] = useState<IPosts[]>([]);
-
+	const [comments, setComments] = useState<IComment[]>([]);
 	const [change, setChange] = useState({
 		title: "",
 		body: "",
@@ -21,26 +23,79 @@ function App() {
 		body: "",
 	});
 	const [searchQuery, setSearchQuery] = useState<string>("");
-	const [editingPostId, setEditingPostId] = useState<number | null>(null);
+	const [editingPostId, setEditingPostId] = useState<string | null>(null);
+	const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
 	const [selected, setSelected] = useState<string>("");
 	const [modal, setModal] = useState(false);
 	const sorted = useSortedPosts(posts, selected);
 
-	const addNewPost = (e: FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		const newPosts: IPosts = {
-			id: Date.now(),
-			body: change.body,
-			title: change.title,
+	React.useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const postResponse = await PostAPIService.getAllPosts();
+				const commentResponse = await CommentApiService.getAllComments();
+
+				if (postResponse) {
+					const data = Object.keys(postResponse).map(value => {
+						return {
+							id: value,
+							...postResponse[value],
+						};
+					});
+
+					setPosts(data);
+				} else {
+					setPosts([]);
+				}
+
+				if (commentResponse) {
+					const data = Object.keys(commentResponse).map(value => {
+						return {
+							id: value,
+							...commentResponse[value],
+						};
+					});
+
+					setComments(data);
+				} else {
+					setComments([]);
+				}
+			} catch (error) {
+				console.error("Error when getting data", error);
+			}
 		};
 
-		setPosts([...posts, newPosts]);
-		setChange({
-			title: "",
-			body: "",
-		});
+		fetchData();
+	}, []);
 
-		setModal(!modal);
+	const addNewPost = async (e: FormEvent<HTMLFormElement>) => {
+		try {
+			e.preventDefault();
+			const postData = {
+				body: change.body,
+				title: change.title,
+			};
+
+			const postId = await PostAPIService.createPost(postData);
+			console.log(postId, "post id");
+
+			const newPost: IPosts = {
+				id: postId,
+				title: change.title,
+				body: change.body,
+			};
+
+			setPosts([...posts, newPost]);
+
+			setChange({
+				title: "",
+				body: "",
+			});
+
+			setModal(!modal);
+		} catch (error) {
+			console.error("Error when creating post:", error);
+		}
 	};
 
 	const onChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -54,12 +109,17 @@ function App() {
 		});
 	};
 
-	const onDeletePost = (id: number) => {
-		setPosts(
-			posts.filter(post => {
-				return post.id !== id;
-			}),
-		);
+	const onDeletePost = async (id: string) => {
+		try {
+			await PostAPIService.deletePost(id);
+			setPosts(
+				posts.filter(post => {
+					return post.id !== id;
+				}),
+			);
+		} catch (error) {
+			console.error("Error when deleting post", error);
+		}
 	};
 
 	const startEdit = (post: IPosts) => {
@@ -81,15 +141,56 @@ function App() {
 		});
 	};
 
-	const onUpdatePost = (id: number) => {
-		setPosts(
-			posts.map(post => {
-				return post.id === id
-					? { ...post, title: editValue.title, body: editValue.body }
-					: post;
-			}),
-		);
-		setEditingPostId(null);
+	const onUpdatePost = async (id: string) => {
+		try {
+			const updateData = {
+				title: editValue.title,
+				body: editValue.body,
+			};
+			await PostAPIService.updatePost(id, updateData);
+			setPosts(
+				posts.map(post => {
+					return post.id === id
+						? { ...post, title: editValue.title, body: editValue.body }
+						: post;
+				}),
+			);
+			setEditingPostId(null);
+		} catch (error) {
+			console.error("Error when updating post", error);
+		}
+	};
+
+	const onAddComment = async (postId: string, text: string) => {
+		const commentData = {
+			text: text,
+			postId: postId,
+		};
+
+		const commentId = await CommentApiService.createComment(commentData);
+		console.log(postId, "post id");
+		console.log(commentId, "commentId id");
+
+		const newComment: IComment = {
+			id: commentId,
+			text: text,
+			postId: postId,
+		};
+
+		setComments([...comments, newComment]);
+	};
+
+	const onDeleteComment = async (id: string) => {
+		try {
+			await CommentApiService.deleteComment(id);
+			setComments(
+				comments.filter(comment => {
+					return comment.id !== id;
+				}),
+			);
+		} catch (error) {
+			console.error("Error when deleting post", error);
+		}
 	};
 
 	const sortPosts = (sort: string) => {
@@ -115,26 +216,9 @@ function App() {
 		return filtered;
 	};
 
-	console.log(modal);
-
-	const fetchData = async () => {
-		const response = await PostAPIService.getAllPosts();
-		console.log(response, "res");
-
-		const data = Object.keys(response).map(value => {
-			return {
-				id: value,
-				...response[value],
-			};
-		});
-
-		setPosts(data);
-	};
-
 	const filteredPosts = useMemo(() => searchPosts(), [searchPosts]);
 	return (
 		<React.Fragment>
-			<button onClick={fetchData}>Получить данные</button>
 			<MyButton
 				children='Создать пост'
 				type='button'
@@ -197,6 +281,15 @@ function App() {
 						onEditChange={onEditChange}
 						onUpdate={onUpdatePost}
 						isEdit={editingPostId === post.id}
+						comments={comments}
+						editCommentValue=''
+						editingCommentId={editingCommentId}
+						onAddComment={onAddComment}
+						onCommentEditCancel={() => {}}
+						onDeleteComment={onDeleteComment}
+						onEditComment={() => {}}
+						onEditCommentChange={() => {}}
+						onUpdateComment={() => {}}
 					/>
 				))
 			)}

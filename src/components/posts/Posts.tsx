@@ -2,6 +2,7 @@ import React from "react";
 import MyButton from "../../UI/button/MyButton";
 import type { IPostProps } from "../../interfaces/IPostProps";
 import MyInput from "../../UI/input/MyInput";
+import Comments from "../comments/Comments";
 
 const Posts = ({
 	posts,
@@ -12,6 +13,15 @@ const Posts = ({
 	onEdit,
 	onEditChange,
 	onUpdate,
+	comments,
+	editCommentValue,
+	editingCommentId,
+	onAddComment,
+	onCommentEditCancel,
+	onDeleteComment,
+	onEditComment,
+	onEditCommentChange,
+	onUpdateComment,
 }: IPostProps) => {
 	if (isEdit === true) {
 		return (
@@ -43,9 +53,7 @@ const Posts = ({
 	return (
 		<React.Fragment>
 			<div className='post' key={posts.id}>
-				<h2>
-					{posts.id}.{posts.title}
-				</h2>
+				<h2>{posts.title}</h2>
 				<p>{posts.body}</p>
 			</div>
 			<div className='btns'>
@@ -60,6 +68,18 @@ const Posts = ({
 					onClick={() => onEdit(posts)}
 				/>
 			</div>
+			<Comments
+				comments={comments}
+				editValue={editCommentValue}
+				editingCommentId={editingCommentId}
+				onAddComment={onAddComment}
+				onCancel={onCommentEditCancel}
+				onDeleteComment={onDeleteComment}
+				onEditChange={onEditCommentChange}
+				onEditComment={onEditComment}
+				onUpdateComment={onUpdateComment}
+				postId={posts.id}
+			/>
 		</React.Fragment>
 	);
 };

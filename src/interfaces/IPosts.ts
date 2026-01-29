@@ -1,5 +1,5 @@
 export interface IPosts {
-	id: number;
+	id: string;
 	title: string;
 	body: string;
 }
