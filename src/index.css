@@ -4,6 +4,11 @@
 	box-sizing: border-box;
 }
 
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
 #root {
 	display: flex;
 	justify-content: center;
@@ -27,4 +32,9 @@ p {
 	display: flex;
 	justify-content: center;
 	gap: 15px;
+}
+
+ul {
+	list-style: none;
+	margin-top: 10px;
 }
