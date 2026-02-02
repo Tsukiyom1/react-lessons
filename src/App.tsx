@@ -26,8 +26,11 @@ function App() {
 	const [editingPostId, setEditingPostId] = useState<string | null>(null);
 	const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
 	const [selected, setSelected] = useState<string>("");
-	const [modal, setModal] = useState(false);
+	const [modal, setModal] = useState<boolean>(false);
+	const [commentValue, setCommentValue] = useState<string>("");
 	const sorted = useSortedPosts(posts, selected);
+
+	console.log(comments);
 
 	React.useEffect(() => {
 		const fetchData = async () => {
@@ -168,8 +171,6 @@ function App() {
 		};
 
 		const commentId = await CommentApiService.createComment(commentData);
-		console.log(postId, "post id");
-		console.log(commentId, "commentId id");
 
 		const newComment: IComment = {
 			id: commentId,
@@ -204,8 +205,6 @@ function App() {
 
 		const query = searchQuery.toLowerCase();
 
-		console.log();
-
 		const filtered = sorted.filter(post => {
 			const title = post.title.toLowerCase().includes(query);
 			const body = post.body.toLowerCase().includes(query);
@@ -214,6 +213,49 @@ function App() {
 		});
 
 		return filtered;
+	};
+
+	const onEditCommentChange = (e: ChangeEvent<HTMLInputElement>) => {
+		setCommentValue(e.target.value);
+	};
+
+	const onEditComment = (comment: IComment) => {
+		setEditingCommentId(comment.id);
+		setCommentValue(comment.text);
+	};
+
+	const onCommentEditCancel = () => {
+		setEditingCommentId(null);
+		setCommentValue("");
+	};
+
+	const onUpdateComment = async (id: string, text: string) => {
+		try {
+			const comment = comments.find(com => com.id === id);
+			console.log(comment, "comment ");
+			if (!comment) {
+				throw new Error("Comment not found");
+			}
+
+			const commentData = {
+				postId: comment.postId,
+				text: text,
+			};
+
+			await CommentApiService.updateComment(id, commentData);
+
+			setComments(
+				comments.map(comm => {
+					console.log(comm, "comm");
+
+					return comm.id === id ? { ...comm, text: text } : comm;
+				}),
+			);
+			setEditingCommentId(null);
+			setCommentValue("");
+		} catch (error) {
+			console.error("Error updating comment", error);
+		}
 	};
 
 	const filteredPosts = useMemo(() => searchPosts(), [searchPosts]);
@@ -282,14 +324,14 @@ function App() {
 						onUpdate={onUpdatePost}
 						isEdit={editingPostId === post.id}
 						comments={comments}
-						editCommentValue=''
+						editCommentValue={commentValue}
 						editingCommentId={editingCommentId}
 						onAddComment={onAddComment}
-						onCommentEditCancel={() => {}}
+						onCommentEditCancel={onCommentEditCancel}
 						onDeleteComment={onDeleteComment}
-						onEditComment={() => {}}
-						onEditCommentChange={() => {}}
-						onUpdateComment={() => {}}
+						onEditComment={onEditComment}
+						onEditCommentChange={onEditCommentChange}
+						onUpdateComment={onUpdateComment}
 					/>
 				))
 			)}

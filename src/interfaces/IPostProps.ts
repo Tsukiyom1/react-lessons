@@ -16,7 +16,7 @@ export interface IPostProps {
 	onAddComment: (postId: string, text: string) => void;
 	onDeleteComment: (id: string) => void;
 	onEditComment: (comment: IComment) => void;
-	onUpdateComment: (id: string) => void;
+	onUpdateComment: (id: string, text: string) => void;
 	onCommentEditCancel: () => void;
 	editCommentValue: string;
 	editingCommentId: string | null;
