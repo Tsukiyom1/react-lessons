@@ -10,6 +10,8 @@ import MyModal from "../../UI/modal/MyModal";
 import MyInput from "../../UI/input/MyInput";
 import MySelect from "../../UI/select/MySelect";
 import Posts from "../../components/posts/Posts";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { getPosts } from "../../features/posts/postSlice";
 
 const Data = () => {
 	const [posts, setPosts] = useState<IPosts[]>([]);
@@ -30,7 +32,16 @@ const Data = () => {
 	const [commentValue, setCommentValue] = useState<string>("");
 	const sorted = useSortedPosts(posts, selected);
 
-	console.log(comments);
+	const dispatch = useAppDispatch();
+
+	React.useEffect(() => {
+		console.log("dispatch");
+
+		dispatch(getPosts());
+	}, []);
+
+	const { postsRedux } = useAppSelector(state => state.post);
+	console.log(postsRedux);
 
 	React.useEffect(() => {
 		const fetchData = async () => {
